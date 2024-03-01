@@ -64,7 +64,7 @@ public class TreeBasedMap<K, V> implements CustomMutableMap<K, V> {
     }
 
 
-    public V remove(K key) {  // why was this so horrific.
+    public V remove(K key) {
         if (root == null) {
             return null;
         }

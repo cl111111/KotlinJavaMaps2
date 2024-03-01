@@ -1,11 +1,3 @@
 package maps
 
-class HashMapBackedByLists<K, V>(
-    initialSize: Int,
-    loadFactor: Double,
-    bucketFactory: BucketFactory<K, V>,
-) : GenericHashMap<K, V>(
-    initialSize,
-    loadFactor,
-    bucketFactory,
-)
+class HashMapBackedByLists<K, V>(bucketFactory: BucketFactory<K, V>) : GenericHashMap<K, V>(bucketFactory)

@@ -2,15 +2,13 @@ package maps
 
 typealias BucketFactory<K, V> = () -> CustomMutableMap<K, V>
 
-abstract class GenericHashMap<K, V>(
-    initialSize: Int,
-    private val loadFactor: Double,
-    private val bucketFactory: BucketFactory<K, V>,
-) : CustomMutableMap<K, V> {
+abstract class GenericHashMap<K, V>(private val bucketFactory: BucketFactory<K, V>) : CustomMutableMap<K, V> {
+    protected val initialSize: Int = 32
+    protected val loadFactor: Double = 0.75
+    protected var buckets: Array<CustomMutableMap<K, V>> = Array(initialSize) { bucketFactory() }
 
-    private var buckets: Array<CustomMutableMap<K, V>> = Array(initialSize) { bucketFactory() }
-
-    private var size: Int = 0
+    protected var size: Int = 0
+    protected var numBuckets = initialSize
 
     override val entries: Iterable<Entry<K, V>>
         get() = buckets.flatMap { it.entries }
@@ -59,22 +57,23 @@ abstract class GenericHashMap<K, V>(
         return buckets[index][key]
     }
 
-    private fun getIndex(key: K): Int {
-        if (buckets.size and (buckets.size - 1) == 0) {
-            return key.hashCode() and (buckets.size - 1)
+    protected fun getIndex(key: K): Int {
+        return if (numBuckets and (numBuckets - 1) == 0) {
+            key.hashCode() and (numBuckets - 1)
         } else {
-            return key.hashCode() % buckets.size
+            key.hashCode() % numBuckets
         }
     }
 
-    private fun resize() {
-        if (size >= buckets.size * loadFactor) {
-            val newSize: Int = size * 2
-            val newBuckets: Array<CustomMutableMap<K, V>> = Array(newSize) { bucketFactory() }
+    protected open fun resize() {
+        if (size >= numBuckets * loadFactor) {
+            numBuckets *= 2
+            val newBuckets: Array<CustomMutableMap<K, V>> = Array(numBuckets) { bucketFactory() }
             entries.forEach { entry ->
                 val index: Int = getIndex(entry.key)
                 newBuckets[index][entry.key] = entry.value
             }
+            buckets = newBuckets
         }
     }
 }
